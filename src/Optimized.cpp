@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <unordered_set>
+#include <unordered_map>
 #include <set>
 #include <chrono>
 
@@ -11,6 +12,8 @@ vector<vector <char> > lanes;
 vector<int> loc;
 int cnt = 0;
 bool found = false;
+unordered_map<char,bool> check;
+
 
 void outputO(){
     for (int i = 0; i < n; i++)
@@ -89,6 +92,7 @@ void solveO(string text,int kslide){
             lanes.push_back(tmp);
             tmp.clear();
         }else{
+            check[text[i]] = false;
             tmp.push_back(text[i]);
             col++;
         }
@@ -98,10 +102,28 @@ void solveO(string text,int kslide){
     set<char> cntz;
     loc.assign(n,0);
     if(n != m){cout << "N != M" << endl; return;}
+    bool chck[n][m];
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < m; j++)
         {
+            if (check[lanes[i][j]])
+            {
+                bool chec = false;
+                if(i > 0 && lanes[i-1][j] == lanes[i][j] && chck[i-1][j])chec = true;
+                if(i < n-1 && lanes[i+1][j]== lanes[i][j] && chck[i+1][j])chec = true;
+                if(j > 0 && lanes[i][j-1]== lanes[i][j] && chck[i][j-1])chec = true;
+                if(j < n-1 && lanes[i][j+1]== lanes[i][j] && chck[i][j+1])chec = true;
+                if(!chec){
+                    cout<< "INVALID INPUT (Warna tidak membentuk satu kelompok)" << endl;
+                    return;
+                }else{
+                    chck[i][j] = true;
+                }
+            }else{
+                check[lanes[i][j]] = true;
+                chck[i][j] = true;
+            }
             cntz.insert(lanes[i][j]);
         }
     }

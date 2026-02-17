@@ -2,6 +2,7 @@
 #include <vector>
 #include <set>
 #include <chrono>
+#include <unordered_map>
 
 using namespace std;
 
@@ -10,6 +11,7 @@ vector<vector <char> > lanesn;
 vector<int> locn;
 int cntn = 0;
 bool foundn = false;
+unordered_map<char,bool> checkn;
 
 void outputN(){
     for (int i = 0; i < nn; i++)
@@ -75,6 +77,7 @@ void loopN(int dn){
 
 
 
+
 void solveN(string textn,int ksliden){
     int rown = 0;
     int coln = 0;
@@ -100,6 +103,7 @@ void solveN(string textn,int ksliden){
             lanesn.push_back(tmpn);
             tmpn.clear();
         }else{
+            checkn[textn[i]] = false;
             tmpn.push_back(textn[i]);
             coln++;
         }
@@ -108,16 +112,35 @@ void solveN(string textn,int ksliden){
     nn = rown; mn = maxcoln;
     set <char> cntnz;
     locn.assign(nn,0);
-    if(nn != mn){cout << "N != M" << endl; }
+    if(nn != mn){cout << "N != M" << endl; return;}
+    bool chckn[nn][mn];
     for (int i = 0; i < nn; i++)
     {
         for (int j = 0; j < mn; j++)
         {
+            if (checkn[lanesn[i][j]])
+            {
+                bool checn = false;
+                if(i > 0 && lanesn[i-1][j] == lanesn[i][j] && chckn[i-1][j])checn = true;
+                if(i < nn-1 && lanesn[i+1][j]== lanesn[i][j] && chckn[i+1][j])checn = true;
+                if(j > 0 && lanesn[i][j-1]== lanesn[i][j] && chckn[i][j-1])checn = true;
+                if(j < nn-1 && lanesn[i][j+1]== lanesn[i][j] && chckn[i][j+1])checn = true;
+                if(!checn){
+                    cout<< "INVALID INPUT (Warna tidak membentuk satu kelompok)" << endl;
+                    return;
+                }else{
+                    chckn[i][j] = true;
+                }
+            }else{
+                checkn[lanesn[i][j]] = true;
+                chckn[i][j] = true;
+            }
+            
             cntnz.insert(lanesn[i][j]);
         }
     }
     zn= cntnz.size();
-    if(nn != zn){cout << "Jumlah warna != N" << endl; }
+    if(nn != zn){cout << "Jumlah warna != N" << endl; return; }
     auto startn = chrono::high_resolution_clock::now();
     loopN(0);
     auto endn = chrono::high_resolution_clock::now();
