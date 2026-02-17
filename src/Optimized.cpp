@@ -74,7 +74,7 @@ void dive(int i, int j){
     if(j < n-1 && lanes[i][j+1]== lanes[i][j] && !chck[i][j+1])dive(i,j+1);
 }
 
-void solveO(string text,int kslide){
+void solveO(string texto,int kslide){
     int row = 0;
     int col = 0;
     int maxcol = 0;
@@ -84,9 +84,10 @@ void solveO(string text,int kslide){
     found = false;
     cnt = 0;
     vector<char> tmp;
-    for (int i = 0; i < text.size(); i++)
+    for (int i = 0; i < texto.size(); i++)
     {
-        if(text[i] == '\n' || text[i] == ' '){
+        if (texto[i] == '\r')continue;
+        if(texto[i] == '\n' || texto[i] == ' '){
             if(row == 0){
                 maxcol = col;
             }
@@ -99,12 +100,19 @@ void solveO(string text,int kslide){
             lanes.push_back(tmp);
             tmp.clear();
         }else{
-            check[text[i]] = false;
-            tmp.push_back(text[i]);
+            check[texto[i]] = false;
+            tmp.push_back(texto[i]);
             col++;
         }
     }
-    if(tmp.size() != 0){lanes.push_back(tmp);row++;}
+    if(tmp.size() != 0){
+        if(tmp.size() != maxcol){
+            cout << "Row tidak lengkap" << endl;
+            return;
+        }
+        lanes.push_back(tmp);
+        row++;
+    }
     n = row; m = maxcol;
     set<char> cntz;
     loc.assign(n,0);
@@ -114,6 +122,7 @@ void solveO(string text,int kslide){
     {
         for (int j = 0; j < m; j++)
         {
+            int prev = cntz.size();
             if (check[lanes[i][j]] && !chck[i][j])
             {
                 cout << "INVALID INPUT (Warna tidak membentuk satu kelompok)" << endl;
@@ -123,9 +132,11 @@ void solveO(string text,int kslide){
                 dive(i,j);
             }
             cntz.insert(lanes[i][j]);
+            if(prev != cntz.size())cout << lanes[i][j] << " colo"<< z << endl;
         }
     }
     z = cntz.size();
+    cout << z << endl;
     if(n != z){cout << "Jumlah warna != N" << endl; return;}
     unordered_set<int> l;
     unordered_set<char> c;

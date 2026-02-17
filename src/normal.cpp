@@ -56,7 +56,7 @@ void confirmN(){
     }
 }
 
-void loopN(int dn){
+void loopN(int dn){ 
     for (int i = locn[dn]; i < mn; i++)
     {
         if(dn<nn-1){
@@ -97,6 +97,7 @@ void solveN(string textn,int ksliden){
     vector<char> tmpn;
     for (int i = 0; i < textn.size(); i++)
     {
+        if (textn[i] == '\r')continue;
         if(textn[i] == '\n' || textn[i] == ' '){
             if(rown == 0){
                 maxcoln = coln;
@@ -115,7 +116,14 @@ void solveN(string textn,int ksliden){
             coln++;
         }
     }
-    if(tmpn.size() != 0){lanesn.push_back(tmpn);rown++;}
+    if(tmpn.size() != 0){
+        if(tmpn.size() != maxcoln){
+            cout << "Row tidak lengkap" << endl;
+            return;
+        }
+        lanesn.push_back(tmpn);
+        rown++;
+    }
     nn = rown; mn = maxcoln;
     set <char> cntnz;
     locn.assign(nn,0);

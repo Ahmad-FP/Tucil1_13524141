@@ -1,0 +1,8 @@
+A # B B
+A A B #
+# C D D
+C C # D
+-------------------------
+FOUND
+Waktu Pencarian : 0.150875ms
+Banyak Kasus Yang Di Tinjau: 114
