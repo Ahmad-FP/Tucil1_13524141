@@ -1,24 +1,31 @@
 #include <gtkmm.h>
 #include <fstream>
 #include <sstream>
+#include <thread>
 #include "normal.cpp"
 #include "Optimized.cpp"
 
 using namespace std;
 using namespace Gtk;
 
+ostringstream sout;
+
 
 class window : public Window {
-Box box, mid,slide_box;
+Box box, mid,kslidebox,tslidebox;
 ScrolledWindow in_scroll, out_scroll;
 TextView in_view, out_view;
 Button load_btn, process_btn, optimized_btn,save_btn;
-Label slide_label;
-Scale slide;
+Label kslidelabel,tslidelabel;
+Scale kslide, tslide;
 int k=1;
+int t = 100;
+thread* thr;
+sigc::connection timer;
 
 public:
     window() {
+
         set_title("Tucil1");
         set_default_size(600,800);
 
@@ -40,16 +47,25 @@ public:
         mid.append(save_btn);
         mid.set_halign(Align::CENTER);
 
-        auto adj = Adjustment::create(1,1,1000000,10);
-        slide.set_adjustment(adj);
-        slide.set_draw_value(true);
-        slide_label.set_text("Live Update Frequency (Higher is lower)");
-        slide.signal_value_changed().connect([this](){slidechange();});
-        
-        slide_box.set_orientation(Orientation::VERTICAL);
-        slide_box.append(slide_label);
-        slide_box.append(slide);
+        auto adj = Adjustment::create(1,1,1000000,1000,1000);
+        kslide.set_adjustment(adj);
+        kslide.set_draw_value(true);
+        kslidelabel.set_text("Output Interval in Cases (Higher is lower)");
+        kslide.signal_value_changed().connect([this](){kslidechange();});
 
+        kslidebox.set_orientation(Orientation::VERTICAL);
+        kslidebox.append(kslidelabel);
+        kslidebox.append(kslide);
+
+        auto tadj = Adjustment::create(1,100,3000,100,1000);
+        tslide.set_adjustment(tadj);
+        tslide.set_draw_value(true);
+        tslidelabel.set_text("Output Interval in Milliseconds");
+        tslide.signal_value_changed().connect([this](){tslidechange();});
+
+        tslidebox.set_orientation(Orientation::VERTICAL);
+        tslidebox.append(tslidelabel);
+        tslidebox.append(tslide);
 
         in_scroll.set_child(in_view);
         in_scroll.set_vexpand(true);
@@ -58,7 +74,8 @@ public:
         
         box.append(in_scroll);
         box.append(mid);
-        box.append(slide_box);
+        box.append(kslidebox);
+        box.append(tslidebox);
         box.append(out_scroll);
 
         set_child(box);
@@ -90,8 +107,8 @@ private:
         dialog->open(*this, [this, dialog](auto res) {
             auto file = dialog->open_finish(res);
             if (file) {
-                std::ifstream i(file->get_path());
-                std::stringstream ss;
+                ifstream i(file->get_path());
+                stringstream ss;
                 ss << i.rdbuf();
                 in_view.get_buffer()->set_text(ss.str());
             }
@@ -100,30 +117,59 @@ private:
     }   
 
     void processOptimized() {
-        string text = in_view.get_buffer()->get_text();
-        streambuf* ori = cout.rdbuf();
-        ostringstream out;
-        cout.rdbuf(out.rdbuf());
-        solveO(text,k);
-        cout.rdbuf(ori);
+        if(thr && thr->joinable()) thr->join();
+        if(timer.connected()) timer.disconnect();
 
-        out_view.get_buffer()->set_text(out.str());
+        sout.str("");
+        string text = in_view.get_buffer()->get_text();
+        int curk = k;
+        thr = new thread([text, curk]() {
+            streambuf* ori = cout.rdbuf();
+            cout.rdbuf(sout.rdbuf());
+            solveO(text, curk);
+            cout.rdbuf(ori);
+        });
+
+        timer = Glib::signal_timeout().connect([this]() {
+            out_view.get_buffer()->set_text(sout.str()); 
+            if(thr && !thr->joinable()) {
+                thr->join();
+                return false;
+            }
+            return true;
+        }, t);
     }
 
     void process() {
+        if(thr && thr->joinable()) thr->join();
+        if(timer.connected()) timer.disconnect();
+
+        sout.str("");
         string text = in_view.get_buffer()->get_text();
-        streambuf* ori = cout.rdbuf();
-        ostringstream out;
-        cout.rdbuf(out.rdbuf());
-        solveN(text,k);
-        cout.rdbuf(ori);
-        out_view.get_buffer()->set_text(out.str());
+        int curk = k;
+        thr = new thread([text, curk]() {
+            streambuf* ori = cout.rdbuf();
+            cout.rdbuf(sout.rdbuf());
+            solveN(text, curk);
+            cout.rdbuf(ori);
+        });
+
+        timer = Glib::signal_timeout().connect([this]() {
+            out_view.get_buffer()->set_text(sout.str());
+            if(thr && !thr->joinable()) {
+                thr->join();
+                return false;
+            }
+            return true;
+        }, t);
     }
 
-    void slidechange(){
-        k = slide.get_value();
+    void kslidechange(){
+        k = kslide.get_value();
     }
-    
+    void tslidechange(){
+        t = tslide.get_value();
+    }
 };
 
 int main(int argc, char** argv) {
