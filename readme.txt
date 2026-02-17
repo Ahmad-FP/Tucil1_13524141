@@ -7,13 +7,18 @@ PENJELASAN PROGRAM
 
 REQUIREMENT
 - gtkmm4
-- C++17 
+- C++23 
 
 Instalasi di macOS
 brew install gtkmm4
 
 Instalasi di Linux
 sudo apt install libgtk-4-dev
+
+Instalasi di Windows
+Melalui MSYS2 terminal
+pacman -S mingw-w64-x86_64-gtk4 mingw-w64-x86_64-gcc mingw-w64-x86_64-pkg-config
+
 
 CARA COMPILE
 cd src
