@@ -11,6 +11,7 @@ int n,m,z ,k = 10000000;
 vector<vector <char> > lanes;
 vector<int> loc;
 int cnt = 0;
+vector<vector<bool> > chck;
 bool found = false;
 unordered_map<char,bool> check;
 
@@ -65,7 +66,13 @@ void loopO(int d,unordered_set<int> &l, vector<int> &lorder, unordered_set<char>
 
 }
 
-
+void dive(int i, int j){
+    chck[i][j]= true;
+    if(i > 0 && lanes[i-1][j] == lanes[i][j] && !chck[i-1][j])dive(i-1,j);
+    if(i < n-1 && lanes[i+1][j]== lanes[i][j] && !chck[i+1][j])dive(i+1,j);
+    if(j > 0 && lanes[i][j-1]== lanes[i][j] && !chck[i][j-1])dive(i,j-1);
+    if(j < n-1 && lanes[i][j+1]== lanes[i][j] && !chck[i][j+1])dive(i,j+1);
+}
 
 void solveO(string text,int kslide){
     int row = 0;
@@ -102,27 +109,18 @@ void solveO(string text,int kslide){
     set<char> cntz;
     loc.assign(n,0);
     if(n != m){cout << "N != M" << endl; return;}
-    bool chck[n][m];
+    chck.assign(n,vector<bool>(n));
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < m; j++)
         {
-            if (check[lanes[i][j]])
+            if (check[lanes[i][j]] && !chck[i][j])
             {
-                bool chec = false;
-                if(i > 0 && lanes[i-1][j] == lanes[i][j] && chck[i-1][j])chec = true;
-                if(i < n-1 && lanes[i+1][j]== lanes[i][j] && chck[i+1][j])chec = true;
-                if(j > 0 && lanes[i][j-1]== lanes[i][j] && chck[i][j-1])chec = true;
-                if(j < n-1 && lanes[i][j+1]== lanes[i][j] && chck[i][j+1])chec = true;
-                if(!chec){
-                    cout<< "INVALID INPUT (Warna tidak membentuk satu kelompok)" << endl;
-                    return;
-                }else{
-                    chck[i][j] = true;
-                }
-            }else{
+                cout << "INVALID INPUT (Warna tidak membentuk satu kelompok)" << endl;
+                return;
+            }else if (!check[lanes[i][j]]){
                 check[lanes[i][j]] = true;
-                chck[i][j] = true;
+                dive(i,j);
             }
             cntz.insert(lanes[i][j]);
         }

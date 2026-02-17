@@ -9,11 +9,11 @@ using namespace Gtk;
 
 
 class window : public Window {
-Label slide_label;
 Box box, mid,slide_box;
 ScrolledWindow in_scroll, out_scroll;
 TextView in_view, out_view;
-Button load_btn, process_btn, optimized_btn;
+Button load_btn, process_btn, optimized_btn,save_btn;
+Label slide_label;
 Scale slide;
 int k=1;
 
@@ -27,15 +27,17 @@ public:
         load_btn.set_label("Load txt");
         process_btn.set_label("Process");
         optimized_btn.set_label("Optimized Process");
+        save_btn.set_label("Save Output");
 
         load_btn.signal_clicked().connect([this]() { load_file(); });
         process_btn.signal_clicked().connect([this]() { process(); });
         optimized_btn.signal_clicked().connect([this](){processOptimized();});
-        
+        save_btn.signal_clicked().connect([this](){save();});
 
         mid.append(load_btn);
         mid.append(process_btn);
         mid.append(optimized_btn);
+        mid.append(save_btn);
         mid.set_halign(Align::CENTER);
 
         auto adj = Adjustment::create(1,1,1000000,10);
@@ -63,6 +65,24 @@ public:
     }
 
 private:
+
+    void save(){
+
+        auto dialog = FileDialog::create();
+        dialog->set_title("Save Output as TXT");
+        dialog->set_initial_name("Output.txt");
+
+        dialog->save(*this, [this, dialog](auto res){
+            auto file= dialog->save_finish(res);
+            if(file){
+                ofstream o(file->get_path());
+                o << out_view.get_buffer()->get_text();
+                o.close();
+            }
+
+        });
+
+    }
    void load_file() {
         auto dialog = Gtk::FileDialog::create();
         dialog->set_title("Select a TXT File");
@@ -81,22 +101,22 @@ private:
 
     void processOptimized() {
         string text = in_view.get_buffer()->get_text();
-
+        streambuf* ori = cout.rdbuf();
         ostringstream out;
-        streambuf* buf = cout.rdbuf(out.rdbuf());
+        cout.rdbuf(out.rdbuf());
         solveO(text,k);
-        cout.rdbuf(buf);
+        cout.rdbuf(ori);
 
         out_view.get_buffer()->set_text(out.str());
     }
 
     void process() {
         string text = in_view.get_buffer()->get_text();
-
+        streambuf* ori = cout.rdbuf();
         ostringstream out;
-        streambuf* buf = cout.rdbuf(out.rdbuf());
+        cout.rdbuf(out.rdbuf());
         solveN(text,k);
-        cout.rdbuf(buf);
+        cout.rdbuf(ori);
         out_view.get_buffer()->set_text(out.str());
     }
 

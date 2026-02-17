@@ -10,6 +10,7 @@ int nn,mn,zn ,kn = 10000000;
 vector<vector <char> > lanesn;
 vector<int> locn;
 int cntn = 0;
+vector<vector<bool> > chckn;
 bool foundn = false;
 unordered_map<char,bool> checkn;
 
@@ -75,7 +76,13 @@ void loopN(int dn){
     }
 }
 
-
+void diven(int i, int j){
+    chckn[i][j]= true;
+    if(i > 0 && lanesn[i-1][j] == lanesn[i][j] && !chckn[i-1][j])diven(i-1,j);
+    if(i < nn-1 && lanesn[i+1][j]== lanesn[i][j] && !chckn[i+1][j])diven(i+1,j);
+    if(j > 0 && lanesn[i][j-1]== lanesn[i][j] && !chckn[i][j-1])diven(i,j-1);
+    if(j < nn-1 && lanesn[i][j+1]== lanesn[i][j] && !chckn[i][j+1])diven(i,j+1);
+}
 
 
 void solveN(string textn,int ksliden){
@@ -113,29 +120,19 @@ void solveN(string textn,int ksliden){
     set <char> cntnz;
     locn.assign(nn,0);
     if(nn != mn){cout << "N != M" << endl; return;}
-    bool chckn[nn][mn];
+    chckn.assign(nn,vector<bool>(nn,false));
     for (int i = 0; i < nn; i++)
     {
         for (int j = 0; j < mn; j++)
         {
-            if (checkn[lanesn[i][j]])
+            if (checkn[lanesn[i][j]] && !chckn[i][j])
             {
-                bool checn = false;
-                if(i > 0 && lanesn[i-1][j] == lanesn[i][j] && chckn[i-1][j])checn = true;
-                if(i < nn-1 && lanesn[i+1][j]== lanesn[i][j] && chckn[i+1][j])checn = true;
-                if(j > 0 && lanesn[i][j-1]== lanesn[i][j] && chckn[i][j-1])checn = true;
-                if(j < nn-1 && lanesn[i][j+1]== lanesn[i][j] && chckn[i][j+1])checn = true;
-                if(!checn){
-                    cout<< "INVALID INPUT (Warna tidak membentuk satu kelompok)" << endl;
-                    return;
-                }else{
-                    chckn[i][j] = true;
-                }
-            }else{
+                cout << "INVALID INPUT (Warna tidak membentuk satu kelompok)" << endl;
+                return;
+            }else if (!checkn[lanesn[i][j]]){
                 checkn[lanesn[i][j]] = true;
-                chckn[i][j] = true;
+                diven(i,j);
             }
-            
             cntnz.insert(lanesn[i][j]);
         }
     }
