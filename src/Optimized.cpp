@@ -122,7 +122,6 @@ void solveO(string texto,int kslide){
     {
         for (int j = 0; j < m; j++)
         {
-            int prev = cntz.size();
             if (check[lanes[i][j]] && !chck[i][j])
             {
                 cout << "INVALID INPUT (Warna tidak membentuk satu kelompok)" << endl;
@@ -132,11 +131,9 @@ void solveO(string texto,int kslide){
                 dive(i,j);
             }
             cntz.insert(lanes[i][j]);
-            if(prev != cntz.size())cout << lanes[i][j] << " colo"<< z << endl;
         }
     }
     z = cntz.size();
-    cout << z << endl;
     if(n != z){cout << "Jumlah warna != N" << endl; return;}
     unordered_set<int> l;
     unordered_set<char> c;
